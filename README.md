@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/azinmoradbeikie/Sensor2EventLog/tree/main/images/Sensor2EventLog_001.png" width="300" />
+  <img src="[https://github.com/azinmoradbeikie/Sensor2EventLog/tree/main/images/Sensor2EventLog_001.png](https://github.com/azinmoradbeikie/Sensor2EventLog/blob/main/images/Sensor2EventLog_001.png)" width="300" />
 </p>
 
 [![Documentation Status](https://readthedocs.org/projects/sensor2eventlog/badge/?version=latest)](https://sensor2eventlog.readthedocs.io/en/latest/?badge=latest)
