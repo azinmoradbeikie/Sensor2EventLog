@@ -1,7 +1,11 @@
 # docs/conf.py
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+# Add the project root to path only if it exists
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if os.path.exists(project_root):
+    sys.path.insert(0, project_root)
 
 project = 'Sensor2EventLog'
 copyright = '2026, Azin Moradbeikie'
@@ -13,11 +17,16 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'readthedocs_sphinx_ext',
 ]
 
+# Only add readthedocs extension if available
+try:
+    extensions.append('readthedocs_sphinx_ext')
+except ImportError:
+    pass
+
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'README.md']
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
