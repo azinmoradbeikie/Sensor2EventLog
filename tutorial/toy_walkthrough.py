@@ -13,7 +13,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from features.feature_library import ModularFeatureLibrary
+import types
+
+import config as base_config
+from core.pipeline import Sensor2EventLogPipeline
 
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
@@ -275,7 +278,8 @@ def plot_process_graph(dfg: pd.DataFrame, node_order: list[str]) -> None:
     step = 2.8
     x_positions = {node: i * step for i, node in enumerate(nodes)}
     y_positions = {node: 0 for node in nodes}
-    arrow_y = 0.0
+    forward_y = 0.0
+    backward_y = 0.35
     label_y = 0.18
 
     fig, ax = plt.subplots(figsize=(max(12, n * 2.8), 3.5))
@@ -295,17 +299,21 @@ def plot_process_graph(dfg: pd.DataFrame, node_order: list[str]) -> None:
         width = 0.8 + 2.5 * strength
         alpha = 0.25 + 0.75 * strength
         box_half = 0.55
+        is_forward = x0 <= x1
+        y = forward_y if is_forward else backward_y
         ax.annotate(
             "",
-            xy=(x1 - box_half, arrow_y),
-            xytext=(x0 + box_half, arrow_y),
+            xy=(x1 - box_half, y),
+            xytext=(x0 + box_half, y),
             arrowprops=dict(
                 arrowstyle="->",
                 linewidth=width,
                 alpha=alpha,
             ),
+            zorder=2,
         )
-        ax.text((x0 + x1) / 2, label_y, str(row["count"]), ha="center", va="bottom", fontsize=9)
+        label_y_pos = label_y if is_forward else backward_y + 0.12
+        ax.text((x0 + x1) / 2, label_y_pos, str(row["count"]), ha="center", va="bottom", fontsize=9, zorder=4)
 
     for node in nodes:
         x, y = x_positions[node], y_positions[node]
@@ -317,6 +325,7 @@ def plot_process_graph(dfg: pd.DataFrame, node_order: list[str]) -> None:
             linewidth=1.2,
             edgecolor="#333333",
             facecolor="#f2f2f2",
+            zorder=3,
         )
         ax.add_patch(box)
         ax.text(x, y, node, ha="center", va="center", fontsize=10)
@@ -332,19 +341,37 @@ def main() -> None:
 
     df = make_toy_dataset()
     feature_plan = build_feature_plan()
-    feature_lib = ModularFeatureLibrary(window_sizes=[3], stability_eps=1.0, peak_threshold=0.1)
+    dataset_path = OUTPUT_DIR / "toy_sensor_data.csv"
+    df.to_csv(dataset_path, index=False)
 
-    analysis = feature_lib.analyze_rule_performance(df, feature_plan)
-    features = analysis["features"]
-    diagnostics = analysis["diagnostics"]
-    event_log = build_event_log(df)
+    cfg = types.SimpleNamespace(
+        **{k: v for k, v in base_config.__dict__.items() if k.isupper()}
+    )
+    cfg.PATHS = {
+        "event_log": str(OUTPUT_DIR / "toy_event_log.csv"),
+        "filtered_log": str(OUTPUT_DIR / "toy_event_log_filtered.csv"),
+    }
+
+    pipeline = Sensor2EventLogPipeline(cfg)
+    results = pipeline.run(
+        data_path=str(dataset_path),
+        feature_plan=feature_plan,
+        mode="unsupervised",
+        use_cip=False,
+        n_unsup=None,
+        random_seed=42,
+        return_intermediate=True,
+        min_duration_seconds=0.0,
+    )
+
+    features = results["features"]
+    diagnostics = results["diagnostics"]
+    event_log = results["event_log"].to_dataframe()
     dfg = compute_dfg(event_log)
 
-    dataset_path = OUTPUT_DIR / "toy_sensor_data.csv"
     features_path = OUTPUT_DIR / "toy_features.csv"
     event_log_path = OUTPUT_DIR / "toy_event_log.csv"
-
-    df.to_csv(dataset_path, index=False)
+    features.to_csv(features_path, index=False)
     features.to_csv(features_path, index=False)
     event_log.to_csv(event_log_path, index=False)
 
