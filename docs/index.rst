@@ -1,32 +1,33 @@
 Welcome to Sensor2EventLog's documentation!
 ===========================================
 
-Sensor2EventLog is a knowledge-guided framework that transforms raw sensor data 
-into process-aware event logs by incorporating Machine Teaching (MT) principles.
+**Sensor2EventLog** is a knowledge-guided framework that transforms raw sensor data into process-aware event logs by incorporating Machine Teaching (MT) principles. The core of the framework is a modular abstraction layer embedded in an interactive teaching loop — *planning*, *explaining*, and *reviewing* — where human experts map sensor behaviors to process states.
+
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
 
-Installation
-============
+   introduction
+   installation
+   quickstart
 
-Clone the repository:
+.. toctree::
+   :maxdepth: 2
+   :caption: User Guide
 
-.. code-block:: bash
+   concepts
+   feature_plan
+   usage
+   configuration
+   outputs
 
-   git clone https://github.com/azinmoradbeikie/Sensor2EventLog.git
-   cd Sensor2EventLog
-   pip install -r requirements.txt
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples & Reference
 
-Usage
-=====
-
-Run the main script:
-
-.. code-block:: bash
-
-   python main.py
+   tutorial
+   api
 
 Indices and tables
 ==================
