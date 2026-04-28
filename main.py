@@ -16,9 +16,32 @@ from utils.hmm_utils import (
 )
 import config
 
+import sys
+import io
+import os
+# --- capture print output to save to results.txt ---
 
-def analyze_process(data_path, feature_plan, mode="unsupervised", 
-                   use_cip=False, n_unsup=None, random_seed=42):
+class _Tee:
+    """Write to multiple streams at once (e.g., console + file buffer)."""
+    def __init__(self, *streams):
+        self.streams = streams
+    def write(self, data):
+        for s in self.streams:
+            s.write(data)
+    def flush(self):
+        for s in self.streams:
+            s.flush()
+
+    
+def analyze_process(data_path, feature_plan, mode="unsupervised",
+                    use_cip=False, n_unsup=None, random_seed=42,
+                    results_txt_path=None):
+    if results_txt_path is None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        results_txt_path = os.path.join(script_dir, "results.txt")
+    buffer = io.StringIO()
+    original_stdout = sys.stdout
+    sys.stdout = _Tee(original_stdout, buffer)
     """
     Main analysis pipeline for process data.
     
@@ -41,77 +64,85 @@ def analyze_process(data_path, feature_plan, mode="unsupervised",
     --------
     dict with analysis results
     """
-    # Load and prepare data
-    df = load_and_prepare_data(data_path, use_cip)
     
-    # Initialize feature library
-    feature_lib = ModularFeatureLibrary(
-        window_sizes=config.FEATURE_CONFIG["window_sizes"],
-        stability_eps=config.FEATURE_CONFIG["stability_eps"],
-        peak_threshold=config.FEATURE_CONFIG["peak_threshold"]
-    )
-    
-    # Compute features and analyze rule performance
-    print("Computing features and analyzing rule performance...")
-    result = feature_lib.analyze_rule_performance(df, feature_plan)
-    all_features = result['features']
-    diagnostics = result['diagnostics']
-    
-    # Print diagnostic report
-    if diagnostics:
-        feature_lib.diagnostic_analyzer.print_diagnostic_report(diagnostics)
-    
-    # Prepare features for HMM
-    event_features = all_features[[col for col in all_features.columns if col.startswith('event_')]]
-    important_raw_features = ['T_roll_mean_5', 'Q_in_roll_mean_5', 'Q_out_roll_mean_5', 'T_diff']
-    
-    # Combine features
-    features = pd.concat([all_features[important_raw_features], event_features], axis=1)
-    
-    # Split data into train/test
-    train_features, test_features, df_train, df_test = split_train_test(df, features)
-    
-    # Scale features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(train_features)
-    X_test_scaled = scaler.transform(test_features)
-    
-    # Pack sequences for HMM
-    X_train_np, lengths_train = pack_sequences(df_train, X_train_scaled)
-    X_test_np, lengths_test = pack_sequences(df_test, X_test_scaled)
-    
-    # Create state mappings
-    state_list = get_state_list(use_cip, n_unsup, mode)
-    state_to_idx, idx_to_state = create_state_mappings(state_list)
-    
-    # Train and evaluate HMM
-    if mode.lower() == "supervised":
-        results = train_supervised_hmm(
-            X_train_np, lengths_train, X_test_np, lengths_test,
-            df_train, df_test, state_to_idx, idx_to_state, state_list
+    try:
+        # Load and prepare data
+        df = load_and_prepare_data(data_path, use_cip)
+        
+        # Initialize feature library
+        feature_lib = ModularFeatureLibrary(
+            window_sizes=config.FEATURE_CONFIG["window_sizes"],
+            stability_eps=config.FEATURE_CONFIG["stability_eps"],
+            peak_threshold=config.FEATURE_CONFIG["peak_threshold"]
         )
-    else:
-        results = train_unsupervised_hmm(
-            X_train_np, lengths_train, X_test_np, lengths_test,
-            df_train, df_test, state_to_idx, idx_to_state, state_list, n_unsup
-        )
-    
-    # Generate event log
-    print("\nGenerating event log...")
-    event_log = generate_event_log(df, results['model'], results['mapping'], 
-                                 results['test_predictions'], scaler, features)
-    
-    # Create visualizations
-    print("\nCreating visualizations...")
-    create_visualizations(event_log)
-    
-    return {
-        'model': results['model'],
-        'features': features,
-        'event_log': event_log,
-        'diagnostics': diagnostics,
-        'predictions': results['test_predictions']
-    }
+        
+        # Compute features and analyze rule performance
+        print("Computing features and analyzing rule performance...")
+        result = feature_lib.analyze_rule_performance(df, feature_plan)
+        all_features = result['features']
+        diagnostics = result['diagnostics']
+        
+        # Print diagnostic report
+        if diagnostics:
+            feature_lib.diagnostic_analyzer.print_diagnostic_report(diagnostics)
+        
+        # Prepare features for HMM
+        event_features = all_features[[col for col in all_features.columns if col.startswith('event_')]]
+        important_raw_features = ['T_roll_mean_5', 'Q_in_roll_mean_5', 'Q_out_roll_mean_5', 'T_diff']
+        
+        # Combine features
+        features = pd.concat([all_features[important_raw_features], event_features], axis=1)
+        
+        # Split data into train/test
+        train_features, test_features, df_train, df_test = split_train_test(df, features)
+        
+        # Scale features
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(train_features)
+        X_test_scaled = scaler.transform(test_features)
+        
+        # Pack sequences for HMM
+        X_train_np, lengths_train = pack_sequences(df_train, X_train_scaled)
+        X_test_np, lengths_test = pack_sequences(df_test, X_test_scaled)
+        
+        # Create state mappings
+        state_list = get_state_list(use_cip, n_unsup, mode)
+        state_to_idx, idx_to_state = create_state_mappings(state_list)
+        
+        # Train and evaluate HMM
+        if mode.lower() == "supervised":
+            results = train_supervised_hmm(
+                X_train_np, lengths_train, X_test_np, lengths_test,
+                df_train, df_test, state_to_idx, idx_to_state, state_list
+            )
+        else:
+            results = train_unsupervised_hmm(
+                X_train_np, lengths_train, X_test_np, lengths_test,
+                df_train, df_test, state_to_idx, idx_to_state, state_list, n_unsup
+            )
+        
+        # Generate event log
+        print("\nGenerating event log...")
+        event_log = generate_event_log(df, results['model'], results['mapping'], 
+                                    results['test_predictions'], scaler, features)
+        
+        # Create visualizations
+        print("\nCreating visualizations...")
+        create_visualizations(event_log)
+        
+        return {
+            'model': results['model'],
+            'features': features,
+            'event_log': event_log,
+            'diagnostics': diagnostics,
+            'predictions': results['test_predictions']
+        }
+    finally:
+        # --- always restore stdout and save the captured text ---
+        sys.stdout = original_stdout
+        with open(results_txt_path, "w", encoding="utf-8") as f:
+            f.write(buffer.getvalue())
+        print(f"Results text saved to: {results_txt_path}")
 
 
 def load_and_prepare_data(data_path, use_cip):
@@ -325,23 +356,36 @@ def create_visualizations(event_log):
 if __name__ == "__main__":
     # Example feature plan
     feature_plan = {
-        'statistical': ['T', 'Q_in', 'Q_out'],
-        'temporal': ['T', 'Q_in', 'Q_out'],
-        'stability': ['T', 'Q_in', 'Q_out'],
-        'interaction': [['T', 'Q_in', 'Q_out']],
+        'statistical': ['T', 'Q_in','Q_out'],           
+        'temporal': ['T', 'Q_in','Q_out'],                      
+        'stability': ['T', 'Q_in','Q_out'],             
+        'interaction': [['T', 'Q_in','Q_out']],
         'event': [
-            '(T_diff_smooth > 1)', 
-            '(T_diff_smooth < -1)',
-            '(Q_out > 0.3)',
-            '(T > 70) & (T_stable_flag == 1)',
-            '(Q_in > 0.3) AND (T_diff < 0.2)'
+        '(T_diff_smooth < -1)',
+
+        # Fill rules
+        '(Q_in > 0.2) AND (Q_out < 0.05)',
+        '(Q_in > 0.2) AND (abs(T_diff) < 0.5) AND (Q_out < 0.05)',
+        
+        # Hold rules
+        '(abs(T_diff) < 0.3) AND (T > 70)',
+        '(abs(T_diff) < 0.2) AND (Q_in < 0.1) AND (Q_out < 0.1) AND (T > 70)',
+        
+        # Discharge rules
+        '(Q_out > 0.2)',
+        '(Q_out > 0.3)',
+        
+        # Idle rules
+        '(Q_in < 0.05) AND (Q_out < 0.05) AND (abs(T_diff) < 0.2)',
+        '(T < 15) AND (Q_in < 0.05) AND (Q_out < 0.05)',
+        '(Q_in < 0.05) AND (Q_out < 0.05) AND (abs(T_diff) < 0.2) AND (T < 15)'
         ],
-        'contextual': []
+        'contextual': []  
     }
     
     # Run analysis
     results = analyze_process(
-        data_path="synthetic_pasteurization_with_cip_signals.csv",
+        data_path="synthetic_pasteurization_with_cip_signals_100.csv",
         feature_plan=feature_plan,
         mode="unsupervised",
         use_cip=False,
