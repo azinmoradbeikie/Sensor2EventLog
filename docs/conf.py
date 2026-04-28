@@ -9,11 +9,12 @@ author = 'Azin Moradbeikie'
 release = '1.0.0'
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    # 'readthedocs_sphinx_ext',  # Comment this out - it's not needed
+    'sphinx.ext.autodoc',      
+    'sphinx.ext.napoleon',     
+    'sphinx.ext.viewcode',     
+    'sphinx.ext.autosummary',  
+    'sphinx.ext.intersphinx',  
+    'sphinx.ext.githubpages',  
 ]
 
 templates_path = ['_templates']
@@ -35,3 +36,21 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_preprocess_types = False
+
+
+autosummary_generate = True       
+autodoc_member_order = 'bysource' 
+
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,        
+    'show-inheritance': True,
+}
+
+
+intersphinx_mapping = {
+    'python':  ('https://docs.python.org/3', None),
+    'numpy':   ('https://numpy.org/doc/stable/', None),
+    'pandas':  ('https://pandas.pydata.org/docs/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+}
