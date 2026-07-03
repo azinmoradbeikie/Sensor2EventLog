@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "Sensor2EventLog"
+abstract: >-
+  A knowledge-guided framework that transforms raw sensor data into
+  process-aware event logs by incorporating Machine Teaching (MT)
+  principles. A modular abstraction layer is embedded in an interactive
+  teaching loop (planning, explaining, and reviewing) where human experts
+  map sensor behaviors to process states.
+authors:
+  - family-names: Moradbeikie
+    given-names: Azin
+  - family-names: Grigore
+    given-names: I. M.
+  - family-names: Lopes
+    given-names: S. I.
+  - family-names: Barbon Junior
+    given-names: S.
+repository-code: "https://github.com/azinmoradbeikie/Sensor2EventLog"
+# TODO: no LICENSE file currently exists in the repo. Add one (e.g. MIT,
+# Apache-2.0) and set the matching SPDX identifier below.
+license: LicenseRef-TODO
+preferred-citation:
+  type: conference-paper
+  title: "Sensor2EventLog: Bridging Continuous IoT Data and Process Mining through Eventization"
+  authors:
+    - family-names: Moradbeikie
+      given-names: Azin
+    - family-names: Grigore
+      given-names: I. M.
+    - family-names: Lopes
+      given-names: S. I.
+    - family-names: Barbon Junior
+      given-names: S.
+  collection-title: "International Conference on Advanced Information Systems Engineering (CAiSE 2026)"
+  publisher:
+    name: "Springer, Cham"
+  start: 177
+  end: 194
+  year: 2026
+  doi: "10.1007/978-3-032-28110-4_10"
