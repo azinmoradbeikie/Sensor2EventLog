@@ -1,14 +1,13 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/azinmoradbeikie/Sensor2EventLog/main/images/Sensor2EventLog_001.png" width="300" />
 </p>
-
 <h1 align="center">Sensor2EventLog</h1>
 <p align="center"><em>Knowledge-guided eventization of continuous sensor streams for process mining.</em></p>
-
 <p align="center">
   <a href="https://sensor2eventlog.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/sensor2eventlog/badge/?version=latest" alt="Documentation Status"/></a>
   <a href="https://pypi.org/project/sensor2eventlog/"><img src="https://img.shields.io/pypi/v/sensor2eventlog" alt="PyPI"/></a>
   <a href="https://doi.org/10.1007/978-3-032-28110-4_10"><img src="https://img.shields.io/badge/DOI-10.1007%2F978--3--032--28110--4__10-blue" alt="DOI"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
 </p>
 
 ## Overview
