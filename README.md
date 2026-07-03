@@ -28,17 +28,6 @@ black-box model is fast but opaque. Sensor2EventLog is built for the middle grou
 pipeline where a domain expert's knowledge directly shapes how sensor behavior is translated into process
 semantics — important in regulated domains such as food and pharmaceutical manufacturing.
 
-## From sensor streams to event logs
-
-```
-raw sensor readings  →  engineered features  →  HMM state decoding  →  interval event log
-   (T, Q_in, Q_out)        (rolling stats,          (Viterbi)           (case, activity,
-                          rules, stability...)                        start, end, duration)
-```
-
-The decoded per-timestamp state sequence is collapsed into intervals, and brief flickers below a configurable
-duration threshold are filtered out to remove spurious transitions. The result is a clean interval log ready for
-downstream process discovery and conformance checking.
 
 ## Key features
 
