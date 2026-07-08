@@ -88,7 +88,7 @@ feature_plan = {
 
 | Level | Tutorial | Description |
 |---|---|---|
-| 0 | [`tutorial/level_0_concepts/`](tutorial/level_0_concepts.ipynb) | What an event log is, why raw sensor data isn't one, tiny raw-data-to-event-log example. *(in progress)* |
+| 0 | [`tutorial/level_0_concepts/`](tutorial/level_0_concepts.ipynb) | What an event log is, why raw sensor data isn't one, tiny raw-data-to-event-log example. |
 | 1 | [`tutorial/`](tutorial/README.md) | Self-contained toy walkthrough — synthetic dataset, feature extraction, diagnostics, event log. Available now as script + notebook. |
 | 1.5 | [`tutorials/level_1_5_first_event_log/`](tutorials/level_1_5_first_event_log/) | Build your first event log from a CSV with 2–3 rules; export CSV and XES. *(in progress)* |
 | 2 | [`tutorials/level_2_machine_teaching_loop/`](tutorials/level_2_machine_teaching_loop/) | The full Plan → Explain → Review loop, before/after a weak feature plan. *(in progress)* |
